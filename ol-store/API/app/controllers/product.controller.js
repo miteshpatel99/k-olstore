@@ -1,5 +1,6 @@
 
 const Product = require('../models/product.models')
+const Prdt = require('../models/product.models')
 
 // Create and Save a new Product
 exports.create = (req, res) => {
@@ -65,8 +66,10 @@ exports.findOne = (req, res) => {
 }
 
 exports.update = (req, res) => {
-  if (!req.body.content) {
-    return res.status(400).send({
+  console.log('put request body', req.body)
+  console.log('req id', req.params.productId)
+  if (!req.body) {
+    return res.status(404).send({
       message: 'Product content can not be empty.'
     })
   }
@@ -76,8 +79,25 @@ exports.update = (req, res) => {
     price: req.body.price,
     retailPrice: req.body.retailPrice,
     discount: req.body.discount,
+    className:req.body.className,
     dataNumber: req.body.dataNumber
-  }, { new: true })
+  }, { new: true }).then(product => {
+    if(!product) {
+        return res.status(404).send({
+            message: "prodcut not found with id " + req.params.productId
+        });
+    }
+    res.send(product);
+  }).catch(err => {
+    if(err.kind === 'ObjectId') {
+        return res.status(404).send({
+            message: "Product not found with id " + req.params.productId
+        });                
+    }
+    return res.status(500).send({
+        message: "Product updating note with id " + req.params.productId
+    });
+});
 }
 
 exports.delete = (req, res) => {
